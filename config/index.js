@@ -1,0 +1,3 @@
+module.exports = {
+    screenShotPath: './screenshot',
+};
