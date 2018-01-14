@@ -1,4 +1,4 @@
 {
-    "pressCoefficient": 1,
+    "pressCoefficient": 0.98,
     "scanStartY": 400
 }

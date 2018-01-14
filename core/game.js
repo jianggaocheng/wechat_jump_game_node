@@ -1,4 +1,5 @@
 const Jimp = require("jimp");
+const moment = require("moment");
 
 // 寻找棋子底部中心坐标
 let getChessPos = im => {
@@ -89,6 +90,15 @@ let getBoardPos = (im, chessPos) => {
           Math.abs(blue - backColor.b) >
         50
       ) {
+        if (
+          40 < red &&
+          red < 66 &&
+          (30 < green && green < 63) &&
+          (68 < blue && blue < 110)
+        ) {
+          return;
+        }
+
         if (!topY) {
           topY = y;
           topX = x;
@@ -135,10 +145,12 @@ module.exports = {
       let chessPos = await getChessPos(im);
       let boardPos = await getBoardPos(im, chessPos);
 
-      // im = await drawLine(im, 0xFF0000FF, chessPos.x, chessPos.y);
-      // im = await drawLine(im, 0x00FF00FF, boardPos.x, boardPos.y);
+      im = await drawLine(im, 0xFF0000FF, chessPos.x, chessPos.y);
+      im = await drawLine(im, 0x00FF00FF, boardPos.x, boardPos.y);
 
-      // im.write('');
+      let filename = moment().format("HHmmssSSS") + "_d.png";
+
+      im.write(screenShotDir+ "/" + filename);
 
       let distance = Math.sqrt(Math.pow((chessPos.x - boardPos.x), 2) + Math.pow((chessPos.x - boardPos.x), 2));
       let pressTime = distance * deviceConfig.pressCoefficient / 1000;

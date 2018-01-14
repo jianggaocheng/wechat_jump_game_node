@@ -1,14 +1,25 @@
 const Jimp = require("jimp");
+const fs = require("fs");
 const async = require("async");
 const game = require("./core/game");
+const path = require("path");
 const wda = require("wda");
+const moment = require("moment");
 const wdaDriver = require('wda-driver');
 const wdaServerURL = "http://192.168.1.15:8100";
+const config = require("./config/index");
 
 const c = new wdaDriver.Client(wdaServerURL);
 
 global.logger = require("./core/logger");
 global.deviceConfig = require("./config.json");
+
+global.screenShotDir = path.resolve(
+  config.screenShotPath,
+  moment().format("YYYYMMDD-HHmmss")
+);
+fs.mkdirSync(screenShotDir);
+
 console.log = function() {};
 
 async function connect() {
@@ -28,7 +39,7 @@ async function screenShot(client) {
   let lastIm = null;
 
   return new Promise((resolve, reject) => {
-    async.retry({times: 10, interval: 50}, function(callback) {
+    async.retry(10, function(callback) {
       let screenshot = client.screenshot().value;
       let dataBuffer = new Buffer(client.screenshot().value, 'base64');
       Jimp.read(dataBuffer, (err, nowIm)=> {
@@ -53,6 +64,9 @@ async function screenShot(client) {
         return reject(err);
       }
 
+      let filename = moment().format("HHmmssSSS") + ".png";
+      result.write(screenShotDir+ "/" + filename);
+
       return resolve(result);
     });
   });
@@ -65,11 +79,13 @@ async function play(){
   let s = await c.session();
 
   async.forever(
-    async function() {
-      let im = await screenShot(client);
-  
-      game.autoPlay(im).then(pressTime => {
-        s.tapHold(200, 200, pressTime);
+    function(next) {
+      screenShot(client).then((im) => {
+        game.autoPlay(im).then(pressTime => {
+          s.tapHold(200, 200, pressTime).then(()=>{
+            next(null);
+          });
+        });
       });
     },
     function(err) {
