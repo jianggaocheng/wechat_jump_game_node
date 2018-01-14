@@ -4,12 +4,13 @@ const wda = require("wda");
 const moment = require("moment");
 const async = require("async");
 const Jimp = require("jimp");
-const logger = require("./core/logger");
+
 const game = require("./core/game");
 const config = require("./config/index");
 const wdaServerURL = "http://192.168.1.15:8100";
 
-global deviceConfig = require("./config.json");
+global.logger = require("./core/logger");
+global.deviceConfig = require("./config.json");
 
 // disable wda console output
 console.log = function() {};
@@ -123,8 +124,16 @@ let getBoardPos = function(result, callback) {
 
   let backColor = Jimp.intToRGBA(im.getPixelColor(1, 1));
 
+  let boardColor = null;
+
   let topX = 0
   let topY = 0;
+
+  let leftX = im.bitmap.width
+  let leftY = 0;
+
+  let rightX = 0
+  let rightY = 0;
 
   let borderX = 0;
   let borderY = 0;
@@ -138,6 +147,7 @@ let getBoardPos = function(result, callback) {
       if (!topY) {
         topY = y;
         topX = x;
+        boardColor = {r:red, g: green, b: blue};
       }
 
       if (topY == y) {
